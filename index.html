@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TO-DO-LIST made by me</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #161515; /* Dark background */
+            color: #fff; /* White text */
+            overflow: hidden;
+            transition: background-color 0.5s ease; /* Smooth transition for background color */
+        }
+
+        .light-mode {
+            background-color: #eed1a4; /* Light mode background color */
+            color: #333; /* Text color in light mode */
+        }
+
+        #todo-container {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: rgb(17, 16, 16); /* Default container background */
+            border-radius: 20px; /* Rounded corners for a modern look */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Darker shadow for depth */
+            transition: background-color 0.3s ease; /* Smooth transition for background color */
+        }
+
+        .light-mode #todo-container {
+            background-color: #ecac4b; /* Light mode container background color */
+        }
+
+        input {
+            width: calc(100% - 30px);
+            padding: 15px;
+            margin: 10px 0;
+            border: none; /* Remove the border */
+            border-bottom: 1px solid #555; /* Bottom border for the line effect */
+            border-radius: 0; /* No border radius */
+            font-size: 16px;
+            color: #fff; /* Darker text color */
+            background-color: #333; /* Darker input background */
+            transition: border-color 0.3s ease;
+        }
+
+        .light-mode input {
+            background-color: #eed1a4; /* Light mode input background color */
+        }
+
+        input:focus {
+            border-color: #afb2b4;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            position: relative;
+            padding: 15px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: growIn 0.3s ease-in-out; /* Growing animation */
+            background-color: #555; /* Darker background for tasks */
+            margin-bottom: 10px;
+        }
+
+        li:hover {
+            background-color: #666; /* Slightly lighter background on hover */
+        }
+
+        .light-mode li {
+            background-color: #ddd; /* Lighter background for tasks in light mode */
+        }
+
+        @keyframes growIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .delete-button {
+            position: absolute;
+            right: 10px;
+            background-color: #555;
+            color: #fff;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease, opacity 0.5s ease; /* Add opacity transition */
+        }
+
+        .delete-button:hover {
+            background-color: #ff4d4d; /* Blend to red on hover */
+        }
+
+        .fade-out {
+            opacity: 0;
+            transition: opacity 0.5s ease; /* Add opacity transition */
+        }
+
+        #mode-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        #mode-toggle:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</head>
+<body>
+    <div id="todo-container">
+        <h1 style="color: #696c6e;">TO-DO-LIST made by me</h1> <!-- Accent color for the title -->
+        <input type="text" id="taskInput" placeholder="write here" onkeydown="addTask(event)">
+        <ul id="taskList"></ul>
+    </div>
+    
+    <!-- Lightbulb toggle -->
+    <div id="mode-toggle" onclick="toggleMode()">
+        💡
+    </div>
+
+    <script>
+        // Load tasks from localStorage on page load
+        window.onload = function() {
+            const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            const taskList = document.getElementById("taskList");
+
+            savedTasks.forEach(taskValue => {
+                const newTask = createTaskElement(taskValue);
+                taskList.appendChild(newTask);
+            });
+        };
+
+        function addTask(event) {
+            if (event.key === 'Enter') {
+                const taskInput = document.getElementById("taskInput");
+                const taskValue = taskInput.value.trim();
+
+                if (taskValue !== "") {
+                    const newTask = createTaskElement(taskValue);
+                    document.getElementById("taskList").appendChild(newTask);
+
+                    // Save tasks to localStorage
+                    saveTasksToLocalStorage();
+
+                    taskInput.value = "";
+                }
+            }
+        }
+
+        function createTaskElement(taskValue) {
+            const newTask = document.createElement("li");
+            newTask.textContent = taskValue;
+
+            // Create delete button
+            const deleteButton = document.createElement("button");
+            deleteButton.className = "delete-button";
+            deleteButton.textContent = "Delete";
+            deleteButton.onclick = function () {
+                // Add fade-out class to the task element
+                newTask.classList.add("fade-out");
+
+                // Remove the task element from the DOM after the animation
+                setTimeout(() => {
+                    newTask.remove();
+                    // Save tasks to localStorage after deletion
+                    saveTasksToLocalStorage();
+                }, 500);
+            };
+
+            newTask.appendChild(deleteButton);
+
+            return newTask;
+        }
+
+        function toggleMode() {
+            document.body.classList.toggle("light-mode");
+        }
+
+        function saveTasksToLocalStorage() {
+            const tasks = Array.from(document.getElementById("taskList").children)
+                .map(taskElement => taskElement.textContent);
+
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+    </script>
+</body>
+</html>
